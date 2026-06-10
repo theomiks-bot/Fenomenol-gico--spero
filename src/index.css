@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-surface: #141414;
+  --color-surface-dim: #0a0a0a;
+  --color-surface-bright: #1f1f1f;
+  --color-surface-container-lowest: #080808;
+  --color-surface-container-low: #111111;
+  --color-surface-container: #161616;
+  --color-surface-container-high: #1e1e1e;
+  --color-surface-container-highest: #282828;
+  --color-on-surface: #d1d1d1;
+  --color-on-surface-variant: #8f8f8f;
+  --color-outline: #333333;
+  --color-outline-variant: #222222;
+  --color-primary: #ffffff;
+  --color-on-primary: #000000;
+  --color-secondary: #8b5e3c;
+  --color-on-secondary: #ffffff;
+  --color-background: #0f0f0f;
+  --color-on-background: #b0b0b0;
+}
+
+/* Base style settings for system aesthetic */
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-mono);
+}
+
+.grid-line {
+  background-image: linear-gradient(to right, #747878 1px, transparent 1px),
+                    linear-gradient(to bottom, #747878 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+

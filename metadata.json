@@ -1,0 +1,6 @@
+{
+  "name": "DDF - Detectora de Distanciamento Fenomenológico",
+  "description": "Ferramenta profissional de interrogação e análise de evidências para confrontação de projetos CAD, realidade física e rastreabilidade de falhas por meio do atrito cognitivo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
