@@ -5,7 +5,9 @@ import { EvidentialConfrontation } from './components/EvidentialConfrontation';
 import { InterrogativeQuestions } from './components/InterrogativeQuestions';
 import { DiaryOfSuspicions } from './components/DiaryOfSuspicions';
 import { BlindMode } from './components/BlindMode';
+import { AuthForm } from './components/AuthForm';
 import { getRandomQuestions } from './questionsBank';
+import { supabase } from './lib/supabaseClient';
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenType>('AGREEMENT');
@@ -13,6 +15,8 @@ export default function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
   const [skippedQuestionId, setSkippedQuestionId] = useState<string | null>(null);
+  const [session, setSession] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Initialize diary entries with the high-fidelity screenshot records
   const [entries, setEntries] = useState<SuspicionEntry[]>([
@@ -51,8 +55,35 @@ export default function App() {
     setQuestions(getRandomQuestions(3));
   }, []);
 
+  useEffect(() => {
+    const initSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setUserEmail(data.session?.user?.email ?? null);
+      if (data.session) {
+        setScreen('TRACEABILITY');
+      }
+    };
+
+    initSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUserEmail(session?.user?.email ?? null);
+      if (session) {
+        setScreen('TRACEABILITY');
+      } else {
+        setScreen('AUTH');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
   const handleAcceptAgreement = () => {
-    setScreen('CONFRONTATION');
+    setScreen('AUTH');
   };
 
   const handleAddGap = (gap: Gap) => {
@@ -98,6 +129,17 @@ export default function App() {
     setEntries(prev => [blindEntry, ...prev]);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setUserEmail(null);
+    setScreen('AUTH');
+  };
+
+  const handleAuthSuccess = () => {
+    setScreen('TRACEABILITY');
+  };
+
   // Render subscreen conditionally
   const renderScreenContent = () => {
     switch (screen) {
@@ -135,6 +177,8 @@ export default function App() {
             onRegisterAnalysis={handleRegisterBlindAnalysis}
           />
         );
+      case 'AUTH':
+        return <AuthForm />;
       default:
         return null;
     }
@@ -143,6 +187,8 @@ export default function App() {
   // Get current screen title text for industrial TopAppBar
   const getHeaderTitle = () => {
     switch (screen) {
+      case 'AUTH':
+        return 'DDF - AUTENTICAÇÃO';
       case 'CONFRONTATION':
         return 'DDF - ANALYSER';
       case 'QUESTIONS':
@@ -159,6 +205,14 @@ export default function App() {
   // Skip rendering standard headers during Agreement checkpoint
   if (screen === 'AGREEMENT') {
     return <CognitiveAgreement onAccept={handleAcceptAgreement} />;
+  }
+
+  if (screen === 'AUTH') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
+        <AuthForm onSuccess={handleAuthSuccess} />
+      </div>
+    );
   }
 
   return (
@@ -206,12 +260,34 @@ export default function App() {
           >
             ANÁLISE CEGA
           </button>
-          <button
-            onClick={() => setScreen('AGREEMENT')}
-            className="font-bold text-outline hover:text-primary ml-2 px-3 py-1.5 border-l border-outline-variant"
-          >
-            RETORNAR
-          </button>
+          {session ? (
+            <>
+              <span className="font-semibold text-on-surface-variant">{userEmail}</span>
+              <button
+                onClick={handleLogout}
+                className="font-bold px-3 py-1.5 text-outline hover:text-primary border-l border-outline-variant"
+              >
+                SAIR
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setScreen('AUTH')}
+                className={`font-bold px-3 py-1.5 border-l border-outline-variant ${
+                  screen === 'AUTH' ? 'text-secondary border-b-2 border-secondary' : 'text-outline hover:text-primary'
+                }`}
+              >
+                LOGIN
+              </button>
+              <button
+                onClick={() => setScreen('AGREEMENT')}
+                className="font-bold text-outline hover:text-primary ml-2 px-3 py-1.5 border-l border-outline-variant"
+              >
+                RETORNAR
+              </button>
+            </>
+          )}
         </div>
       </header>
 

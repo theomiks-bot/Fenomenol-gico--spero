@@ -20,4 +20,4 @@ export interface Question {
   placeholder?: string;
 }
 
-export type ScreenType = 'AGREEMENT' | 'CONFRONTATION' | 'QUESTIONS' | 'TRACEABILITY' | 'BLIND_MODE';
+export type ScreenType = 'AGREEMENT' | 'AUTH' | 'CONFRONTATION' | 'QUESTIONS' | 'TRACEABILITY' | 'BLIND_MODE';
